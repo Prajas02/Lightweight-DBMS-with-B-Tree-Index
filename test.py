@@ -1,60 +1,91 @@
-# test.py
+# # test.py
 
-from database.bplustree import BPlusTree
+# from database.performance_test import PerformanceAnalyzer
+# import matplotlib.pyplot as plt
 
+# # Define the dataset sizes to test with
+# dataset_sizes = [1000, 2000, 3000, 4000, 5000, 6000]
 
-def print_all(tree, title="All key-value pairs"):
-    print(f"\n📄 {title}:")
-    for k, v in tree.get_all():
-        print(f"{k}: {v}")
+# # Create analyzer instance
+# analyzer = PerformanceAnalyzer(order=5)
 
+# # Run tests and collect results
+# print("\n🚀 Running Performance Tests...\n")
+# results = analyzer.run_tests(dataset_sizes)
 
-def main():
-    # Create B+ Tree with order 4
-    tree = BPlusTree(order=4)
+# # Plot time comparison (insert, search)
+# analyzer.plot_results(results)
 
-    # Insert entries
-    print("🟢 Inserting values...")
-    data = [
-        (10, "Alice"),
-        (20, "Bob"),
-        (15, "Charlie"),
-        (5, "David"),
-        (25, "Eve"),
-        (30, "Frank"),
-        (12, "Grace"),
-        (18, "Hannah")
-    ]
+# # Plot memory usage
+# def plot_memory_usage(dataset_sizes, btree_memory, brute_memory):
+#     plt.figure(figsize=(8, 5))
+#     plt.plot(dataset_sizes, btree_memory, label="B+ Tree", color="royalblue", linewidth=2)
+#     plt.plot(dataset_sizes, brute_memory, label="Brute Force", color="darkorange", linewidth=2)
+#     plt.xlabel("Dataset Size")
+#     plt.ylabel("Memory Usage (KB)")
+#     plt.title("Memory Usage Comparison")
+#     plt.legend()
+#     plt.grid(True)
+#     plt.tight_layout()
+#     plt.show()
 
-    for k, v in data:
-        tree.insert(k, v)
+# # Call memory plot with extracted values
+# plot_memory_usage(
+#     results["sizes"],
+#     results["bpt_memory"],
+#     results["bf_memory"]
+# )
 
-    print_all(tree, "After Insertions")
+# testing of visualisation
 
-    # Search
-    print("\n🔍 Searching:")
-    print("Search 15 ➝", tree.search(15))  # Should be Charlie
-    print("Search 100 ➝", tree.search(100))  # Should be None
+# Import the BPlusTree class from the bplustree.py file
+from database.bplustree import BPlusTree, BPlusTreeNode
 
-    # Range Query
-    print("\n📊 Range Query 10 to 25:")
-    for k, v in tree.range_query(10, 25):
-        print(f"{k}: {v}")
+# Create a sample B+ Tree for testing
+def create_sample_bplus_tree():
+    # Create leaf nodes
+    leaf1 = BPlusTreeNode(is_leaf=True)
+    leaf1.keys = [1, 2, 3]
+    leaf2 = BPlusTreeNode(is_leaf=True)
+    leaf2.keys = [4, 5, 6]
+    leaf3 = BPlusTreeNode(is_leaf=True)
+    leaf3.keys = [7, 8, 9]
 
-    # Delete some keys
-    print("\n🗑️ Deleting keys 15, 10, 5...")
-    tree.delete(15)
-    tree.delete(10)
-    tree.delete(5)
+    # Link leaf nodes in a linked list style
+    leaf1.next = leaf2
+    leaf2.next = leaf3
 
-    print_all(tree, "After Deletions")
+    # Create internal nodes
+    internal1 = BPlusTreeNode(is_leaf=False)
+    internal1.keys = [3, 6]
+    internal1.children = [leaf1, leaf2]
+    internal2 = BPlusTreeNode(is_leaf=False)
+    internal2.keys = [9]
+    internal2.children = [leaf3]
 
-    # Visualize tree (Task 3)
-    print("\n🌳 Generating B+ Tree Visualization...")
-    dot = tree.visualize_tree()
-    dot.render("bptree_visual", format="png", cleanup=True)
-    print("✅ Tree visual saved as bptree_visual.png")
+    # Root node
+    root = BPlusTreeNode(is_leaf=False)
+    root.keys = [6]
+    root.children = [internal1, internal2]
 
+    return root
 
-if __name__ == "__main__":
-    main()
+# Test the visualization function
+def test_visualization():
+    # Create a sample B+ Tree
+    root = create_sample_bplus_tree()
+    
+    # Initialize BPlusTree with the root node
+    bptree = BPlusTree(order=4)  # Assuming the default order of 4
+    bptree.root = root  # Assign the created root to the tree
+    
+    # Generate the tree visualization
+    tree_visual = bptree.visualize_tree()
+
+    # Render the tree as a PNG image
+    tree_visual.render('tree_visualization', format='png')
+    print("Tree visualization saved as 'tree_visualization.png'")
+
+# Run the test
+if __name__ == '__main__':
+    test_visualization()
