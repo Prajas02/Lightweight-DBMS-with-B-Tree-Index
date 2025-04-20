@@ -1,4 +1,6 @@
 from table import Table
+import pickle
+import os
 
 class Database:
     def __init__(self):
@@ -78,3 +80,16 @@ class Database:
             self.tables[table_name].delete(key)
         else:
             raise Exception(f"Table '{table_name}' not found.")
+        
+    def save_to_disk(self, filename='database_dump.pkl'):
+        with open(filename, 'wb') as f:
+            pickle.dump(self.tables, f)
+        print("💾 Database saved to disk.")
+
+    def load_from_disk(self, filename='database_dump.pkl'):
+        if os.path.exists(filename):
+            with open(filename, 'rb') as f:
+                self.tables = pickle.load(f)
+            print("📥 Database loaded from disk.")
+        else:
+            print("⚠️ No saved database found.")
