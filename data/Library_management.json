@@ -1,0 +1,1 @@
+{"Books": {"columns": [{"name": "id", "type": "int"}, {"name": "title", "type": "string"}, {"name": "author", "type": "string"}, {"name": "year", "type": "int"}, {"name": "available", "type": "bool"}], "records": [{"id": 1, "title": "Machine Learning", "author": "Nipun Batra", "year": 2023, "available": true}]}}

@@ -1,7 +1,7 @@
-from bplustree import BPlusTree
+from database.bplustree import BPlusTree
 
 class Table:
-    
+
     def __init__(self, name, schema, primary_key, tree_order=3):
         self.name = name
         self.schema = schema

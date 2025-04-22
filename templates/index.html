@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>DB UI</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <h1>Database Manager</h1>
+
+  <section>
+    <h2>Databases</h2>
+    <input type="text" id="dbName" placeholder="Database name">
+    <button onclick="createDatabase()">Create DB</button>
+    <ul id="dbList"></ul>
+  </section>
+
+  <section id="tableSection" style="display:none;">
+    <h2>Tables in <span id="currentDB"></span></h2>
+    <input type="text" id="tableName" placeholder="Table name">
+    <textarea id="tableCols" placeholder='[{"name": "id", "type": "int"}]'></textarea>
+    <button onclick="createTable()">Create Table</button>
+    <ul id="tableList"></ul>
+  </section>
+
+  <section id="recordSection" style="display:none;">
+    <h2>Records in <span id="currentTable"></span></h2>
+    <textarea id="recordData" placeholder='{"id": 1, "name": "Alice"}'></textarea>
+    <button onclick="insertRecord()">Insert Record</button>
+    <ul id="recordList"></ul>
+  </section>
+
+  <script>
+    let selectedDB = null;
+    let selectedTable = null;
+
+    async function fetchDatabases() {
+      const res = await fetch('/api/databases');
+      const data = await res.json();
+      const list = document.getElementById("dbList");
+      list.innerHTML = '';
+      data.databases.forEach(db => {
+        const li = document.createElement("li");
+        li.textContent = db;
+        li.onclick = () => selectDB(db);
+        list.appendChild(li);
+      });
+    }
+
+    async function createDatabase() {
+      const dbName = document.getElementById("dbName").value;
+      await fetch('/api/databases', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: dbName })
+      });
+      fetchDatabases();
+    }
+
+    async function selectDB(dbName) {
+      selectedDB = dbName;
+      document.getElementById("currentDB").textContent = dbName;
+      document.getElementById("tableSection").style.display = 'block';
+      const res = await fetch(`/api/databases/${dbName}/tables`);
+      const data = await res.json();
+      const list = document.getElementById("tableList");
+      list.innerHTML = '';
+      data.tables.forEach(t => {
+        const li = document.createElement("li");
+        li.textContent = t;
+        li.onclick = () => selectTable(t);
+        list.appendChild(li);
+      });
+    }
+
+    async function createTable() {
+      const name = document.getElementById("tableName").value;
+      const cols = JSON.parse(document.getElementById("tableCols").value);
+      await fetch(`/api/databases/${selectedDB}/tables`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, columns: cols })
+      });
+      selectDB(selectedDB);
+    }
+
+    async function selectTable(tableName) {
+      selectedTable = tableName;
+      document.getElementById("currentTable").textContent = tableName;
+      document.getElementById("recordSection").style.display = 'block';
+      const res = await fetch(`/api/databases/${selectedDB}/tables/${tableName}/records`);
+      const records = await res.json();
+      const list = document.getElementById("recordList");
+      list.innerHTML = '';
+      records.forEach(rec => {
+        const li = document.createElement("li");
+        li.textContent = JSON.stringify(rec);
+        list.appendChild(li);
+      });
+    }
+
+    async function insertRecord() {
+      const data = JSON.parse(document.getElementById("recordData").value);
+      await fetch(`/api/databases/${selectedDB}/tables/${selectedTable}/records`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      selectTable(selectedTable);
+    }
+
+    fetchDatabases();
+  </script>
+</body>
+</html>

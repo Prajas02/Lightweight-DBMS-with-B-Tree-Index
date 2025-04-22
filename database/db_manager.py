@@ -1,95 +1,91 @@
-from table import Table
+from database.table import Table
 import pickle
 import os
 
+# database/db_manager.py
+
+import os
+import json
+
 class Database:
     def __init__(self):
-        print("Initializing Database...")
-        self.tables = {}
+        self.databases_dir = "data"
+        os.makedirs(self.databases_dir, exist_ok=True)
+
+    def list_databases(self):
+        return [f.replace('.json', '') for f in os.listdir(self.databases_dir) if f.endswith('.json')]
+
+    def create_database(self, name):
+        db_path = os.path.join(self.databases_dir, f"{name}.json")
+        with open(db_path, 'w') as f:
+            json.dump({}, f)
+
+    def delete_database(self, name):
+        os.remove(os.path.join(self.databases_dir, f"{name}.json"))
+
+    def list_tables(self, db_name):
+        db_path = os.path.join(self.databases_dir, f"{db_name}.json")
+        with open(db_path, 'r') as f:
+            db = json.load(f)
+        return list(db.keys())
+
+    def create_table(self, db_name, table_name, columns):
+        db_path = os.path.join(self.databases_dir, f"{db_name}.json")
+        with open(db_path, 'r') as f:
+            db = json.load(f)
+        db[table_name] = {"columns": columns, "records": []}
+        with open(db_path, 'w') as f:
+            json.dump(db, f)
+
+    def delete_table(self, db_name, table_name):
+        db_path = os.path.join(self.databases_dir, f"{db_name}.json")
+        with open(db_path, 'r') as f:
+            db = json.load(f)
+        db.pop(table_name, None)
+        with open(db_path, 'w') as f:
+            json.dump(db, f)
+
+    def get_table(self, db_name, table_name):
+        return TableHandler(db_name, table_name, self.databases_dir)
 
 
-    def create_table(self, name, schema, primary_key):
-        """
-        Create a new table with a given schema and primary key.
-        """
-        if name in self.tables:
-            raise Exception(f"Table '{name}' already exists.")
-        self.tables[name] = Table(name, schema, primary_key)
-        print(f"✅ Table '{name}' created successfully.")
+class TableHandler:
+    def __init__(self, db_name, table_name, dir_path):
+        self.db_path = os.path.join(dir_path, f"{db_name}.json")
+        self.table_name = table_name
 
-    def drop_table(self, name):
-        """
-        Delete a table by name.
-        """
-        if name in self.tables:
-            del self.tables[name]
-            print(f"🗑 Table '{name}' deleted.")
-        else:
-            print(f"❌ Table '{name}' does not exist.")
+    def all_records(self):
+        with open(self.db_path, 'r') as f:
+            db = json.load(f)
+        return db[self.table_name]["records"]
 
-    def list_tables(self):
-        """
-        List all available table names.
-        """
-        if not self.tables:
-            print("📭 No tables found.")
-        else:
-            print("📋 Available Tables:")
-            for name in self.tables:
-                print(f" - {name}")
-        return list(self.tables.keys())
+    def insert(self, record):
+        with open(self.db_path, 'r') as f:
+            db = json.load(f)
+        db[self.table_name]["records"].append(record)
+        with open(self.db_path, 'w') as f:
+            json.dump(db, f)
 
-    def insert_into(self, table_name, record):
-        """
-        Insert a record into a specified table.
-        """
-        if table_name in self.tables:
-            self.tables[table_name].insert(record)
-        else:
-            raise Exception(f"Table '{table_name}' not found.")
+    def delete(self, record_id):
+        with open(self.db_path, 'r') as f:
+            db = json.load(f)
+        db[self.table_name]["records"].pop(int(record_id))
+        with open(self.db_path, 'w') as f:
+            json.dump(db, f)
 
-    def select_from(self, table_name, key):
-        """
-        Select a record by key from a table.
-        """
-        if table_name in self.tables:
-            return self.tables[table_name].search(key)
-        else:
-            raise Exception(f"Table '{table_name}' not found.")
+    def update(self, record_id, new_data):
+        with open(self.db_path, 'r') as f:
+            db = json.load(f)
+        db[self.table_name]["records"][int(record_id)] = new_data
+        with open(self.db_path, 'w') as f:
+            json.dump(db, f)
 
-    def range_query(self, table_name, start_key, end_key):
-        """
-        Perform a range query on a specified table.
-        """
-        if table_name in self.tables:
-            return self.tables[table_name].range_query(start_key, end_key)
-        else:
-            raise Exception(f"Table '{table_name}' not found.")
+    def search(self, query):
+        with open(self.db_path, 'r') as f:
+            db = json.load(f)
+        return [r for r in db[self.table_name]["records"] if all(r.get(k) == v for k, v in query.items())]
 
-    def get_table(self, name):
-        """
-        Get a Table object by name (optional).
-        """
-        return self.tables.get(name, None)
-
-    def delete_from(self, table_name, key):
-        """
-        Delete a record by primary key from a table.
-        """
-        if table_name in self.tables:
-            self.tables[table_name].delete(key)
-        else:
-            raise Exception(f"Table '{table_name}' not found.")
-        
-    def save_to_disk(self, filename='database_dump.pkl'):
-        with open(filename, 'wb') as f:
-            pickle.dump(self.tables, f)
-        print("💾 Database saved to disk.")
-
-    def load_from_disk(self, filename='database_dump.pkl'):
-        if os.path.exists(filename):
-            with open(filename, 'rb') as f:
-                self.tables = pickle.load(f)
-            print("📥 Database loaded from disk.")
-        else:
-            print("⚠️ No saved database found.")
+    def range_query(self, field, min_val, max_val):
+        with open(self.db_path, 'r') as f:
+            db = json.load(f)
+        return [r for r in db[self.table_name]["records"] if min_val <= r.get(field, 0) <= max_val]
