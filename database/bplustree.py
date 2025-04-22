@@ -275,4 +275,3 @@ class BPlusTree:
             if node.next:
                 next_id = str(id(node.next))
                 dot.edge(node_id, next_id, style='dashed')
-

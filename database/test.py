@@ -50,7 +50,6 @@ print(db.range_query('library_borrowed_books', 100, 200))
 db.drop_table('library_borrowed_books')
 
 
-
 #task 6 
 from db_manager import Database
 
