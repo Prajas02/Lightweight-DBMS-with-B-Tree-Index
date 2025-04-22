@@ -262,16 +262,13 @@ class BPlusTree:
 
     def _add_edges(self, dot, node):
         node_id = str(id(node))
-        
-    def _add_edges(self, dot, node):
-        node_id = str(id(node))
         if not node.is_leaf:
             for child in node.children:
                 child_id = str(id(child))
                 dot.edge(node_id, child_id)
                 self._add_edges(dot, child)
         else:
-        # Draw dashed line to next leaf node (linked list style)
             if node.next:
                 next_id = str(id(node.next))
-                dot.edge(node_id, next_id, style='dashed')
+                dot.edge(node_id, next_id, style='dashed', color='blue')
+
