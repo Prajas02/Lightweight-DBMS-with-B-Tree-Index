@@ -246,7 +246,7 @@ class Database:
 
 import pickle
 import os
-from bplustree import BPlusTree
+from database.bplustree import BPlusTree
 
 class DatabaseManager:
     def __init__(self):
