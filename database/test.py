@@ -78,4 +78,3 @@ print(db.range_query('library_db', 'library_borrowed_books', 100, 200))
 # Drop the table
 db.drop_table('library_db', 'library_borrowed_books')
 print("\nTable 'library_borrowed_books' dropped successfully.")
-

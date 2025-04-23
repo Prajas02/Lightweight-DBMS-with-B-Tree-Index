@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head><title>Tables in {{ db_name }}</title></head>
+<body>
+    <h1>Tables in {{ db_name }}</h1>
+    <ul>
+        {% for table in tables %}
+        <li><a href="{{ url_for('view_table', db_name=db_name, table_name=table) }}">{{ table }}</a></li>
+        {% endfor %}
+    </ul>
+
+    <h2>Create Table</h2>
+    <form method="post" action="{{ url_for('create_table', db_name=db_name) }}">
+        <input type="text" name="table_name" placeholder="Table name" required>
+        <input type="text" name="columns" placeholder="Comma-separated columns (e.g. id,name,age)" required>
+        <button type="submit">Create Table</button>
+    </form>
+</body>
+</html>

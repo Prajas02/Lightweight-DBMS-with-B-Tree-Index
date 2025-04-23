@@ -1,6 +1,7 @@
 import json
 import os
 
+#task 5
 class Database:
     def __init__(self):
         self.databases_dir = "data"
@@ -199,119 +200,121 @@ class Database:
         print("Database loaded from disk.")
 
 
-class TableHandler:
-    def __init__(self, db_name, table_name, dir_path):
-        self.db_path = os.path.join(dir_path, f"{db_name}.json")
-        self.table_name = table_name
+# class TableHandler:
+#     def __init__(self, db_name, table_name, dir_path):
+#         self.db_path = os.path.join(dir_path, f"{db_name}.json")
+#         self.table_name = table_name
 
-    def all_records(self):
-        with open(self.db_path, 'r') as f:
-            db = json.load(f)
-        return db[self.table_name]["records"]
+#     def all_records(self):
+#         with open(self.db_path, 'r') as f:
+#             db = json.load(f)
+#         return db[self.table_name]["records"]
 
-    def insert(self, record):
-        with open(self.db_path, 'r') as f:
-            db = json.load(f)
-        db[self.table_name]["records"].append(record)
-        with open(self.db_path, 'w') as f:
-            json.dump(db, f)
+#     def insert(self, record):
+#         with open(self.db_path, 'r') as f:
+#             db = json.load(f)
+#         db[self.table_name]["records"].append(record)
+#         with open(self.db_path, 'w') as f:
+#             json.dump(db, f)
 
-    def delete(self, record_id):
-        with open(self.db_path, 'r') as f:
-            db = json.load(f)
-        db[self.table_name]["records"].pop(int(record_id))
-        with open(self.db_path, 'w') as f:
-            json.dump(db, f)
+#     def delete(self, record_id):
+#         with open(self.db_path, 'r') as f:
+#             db = json.load(f)
+#         db[self.table_name]["records"].pop(int(record_id))
+#         with open(self.db_path, 'w') as f:
+#             json.dump(db, f)
 
-    def update(self, record_id, new_data):
-        with open(self.db_path, 'r') as f:
-            db = json.load(f)
-        db[self.table_name]["records"][int(record_id)] = new_data
-        with open(self.db_path, 'w') as f:
-            json.dump(db, f)
+#     def update(self, record_id, new_data):
+#         with open(self.db_path, 'r') as f:
+#             db = json.load(f)
+#         db[self.table_name]["records"][int(record_id)] = new_data
+#         with open(self.db_path, 'w') as f:
+#             json.dump(db, f)
 
-    def search(self, query):
-        with open(self.db_path, 'r') as f:
-            db = json.load(f)
-        return [r for r in db[self.table_name]["records"] if all(r.get(k) == v for k, v in query.items())]
+#     def search(self, query):
+#         with open(self.db_path, 'r') as f:
+#             db = json.load(f)
+#         return [r for r in db[self.table_name]["records"] if all(r.get(k) == v for k, v in query.items())]
 
-    def range_query(self, field, min_val, max_val):
-        with open(self.db_path, 'r') as f:
-            db = json.load(f)
-        return [r for r in db[self.table_name]["records"] if min_val <= r.get(field, 0) <= max_val]
+#     def range_query(self, field, min_val, max_val):
+#         with open(self.db_path, 'r') as f:
+#             db = json.load(f)
+#         return [r for r in db[self.table_name]["records"] if min_val <= r.get(field, 0) <= max_val]
+    
 
+#BONUS TASK 
 
-import json
+import pickle
 import os
-from datetime import datetime
+from database.bplustree import BPlusTree
 
-# class Database:
-#     def __init__(self):
-#         self.databases_dir = "data"
-#         os.makedirs(self.databases_dir, exist_ok=True)
+class DatabaseManager:
+    def __init__(self):
+        self.databases = {}
 
-#     def _get_path(self, db_name):
-#         return os.path.join(self.databases_dir, f"{db_name}.json")
+    def create_database(self, db_name):
+        if db_name in self.databases:
+            raise Exception(f"Database '{db_name}' already exists.")
+        self.databases[db_name] = {}
 
-#     def create_table(self, db_name, table_name, schema, primary_key='id'):
-#         path = self._get_path(db_name)
-#         db = {}
-#         if os.path.exists(path):
-#             with open(path, 'r') as f:
-#                 db = json.load(f)
-#         else:
-#             self.save_to_disk(db_name, db)
+    def list_databases(self):
+        return list(self.databases.keys())
 
-#         if table_name in db:
-#             raise Exception(f"Table '{table_name}' already exists.")
-#         db[table_name] = {
-#             "schema": schema,
-#             "primary_key": primary_key,
-#             "records": []
-#         }
-#         self.save_to_disk(db_name, db)
+    def list_tables(self, db_name):
+        if db_name not in self.databases:
+            raise Exception(f"Database '{db_name}' does not exist.")
+        return list(self.databases[db_name].keys())
 
-#     def insert_into(self, db_name, table_name, record):
-#         db = self.load_from_disk(db_name)
+    def create_table(self, db_name, table_name, schema, primary_key):
+        if db_name not in self.databases:
+            self.create_database(db_name)
 
-#         if table_name not in db:
-#             raise Exception(f"Table '{table_name}' doesn't exist.")
+        if table_name in self.databases[db_name]:
+            raise Exception(f"Table '{table_name}' already exists in '{db_name}'.")
 
-#         table = db[table_name]
-#         primary_key = table["primary_key"]
-#         if any(r[primary_key] == record[primary_key] for r in table["records"]):
-#             print(f"Duplicate primary key '{record[primary_key]}' found. Skipping insert.")
-#             return
+        self.databases[db_name][table_name] = {
+            'schema': schema,
+            'records': [],
+            'primary_key': primary_key,
+            'index': BPlusTree()
+        }
 
-#         table["records"].append(record)
-#         self.save_to_disk(db_name, db)
+    def insert_into(self, db_name, table_name, record):
+        if db_name not in self.databases or table_name not in self.databases[db_name]:
+            raise Exception(f"Table '{table_name}' does not exist in database '{db_name}'.")
 
-#     def delete_from(self, db_name, table_name, key_value):
-#         db = self.load_from_disk(db_name)
-#         table = db[table_name]
-#         pk = table["primary_key"]
-#         table["records"] = [r for r in table["records"] if r[pk] != key_value]
-#         self.save_to_disk(db_name, db)
+        table = self.databases[db_name][table_name]
+        schema = table['schema']
+        primary_key = table['primary_key']
 
-#     def range_query(self, db_name, table_name, start, end):
-#         db = self.load_from_disk(db_name)
-#         table = db[table_name]
-#         pk = table["primary_key"]
-#         return [r for r in table["records"] if start <= r[pk] <= end]
+        for key in schema:
+            if key not in record:
+                raise Exception(f"Missing column '{key}' in the record.")
 
-#     def drop_table(self, db_name, table_name):
-#         db = self.load_from_disk(db_name)
-#         del db[table_name]
-#         self.save_to_disk(db_name, db)
+        table['records'].append(record)
+        key = record[primary_key]
+        table['index'].insert(key, record)
 
-#     def save_to_disk(self, db_name=None, db=None):
-#         if db_name and db is not None:
-#             with open(self._get_path(db_name), 'w') as f:
-#                 json.dump(db, f, indent=4)
+    def select_from(self, db_name, table_name, key_value=None):
+        table = self.databases[db_name][table_name]
+        if key_value is None:
+            return table['records']
+        return table['index'].search(key_value)
 
-#     def load_from_disk(self, db_name):
-#         path = self._get_path(db_name)
-#         if not os.path.exists(path):
-#             raise Exception(f"Database '{db_name}' does not exist.")
-#         with open(path, 'r') as f:
-#             return json.load(f)
+    def save_to_disk(self, db_name):
+        with open(f'{db_name}.pkl', 'wb') as f:
+            pickle.dump(self.databases[db_name], f)
+
+    def load_from_disk(self, db_name):
+        filepath = f'{db_name}.pkl'
+        if not os.path.exists(filepath):
+            raise Exception(f"No persisted data found for database '{db_name}'.")
+        with open(filepath, 'rb') as f:
+            self.databases[db_name] = pickle.load(f)
+
+        for table_name, table in self.databases[db_name].items():
+            bptree = BPlusTree()
+            for record in table['records']:
+                key = record[table['primary_key']]
+                bptree.insert(key, record)
+            table['index'] = bptree
