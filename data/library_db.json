@@ -1,0 +1,24 @@
+{
+    "BOOKS_DETAILS": {
+        "columns": [
+            "id",
+            "book_borrowed",
+            "book_title",
+            "book_author",
+            "book_publisher",
+            "book_year"
+        ],
+        "records": []
+    },
+    "SYS_LOGS": {
+        "columns": [
+            "id",
+            "book_borrowed",
+            "book_title",
+            "book_author",
+            "book_publisher",
+            "book_year"
+        ],
+        "records": []
+    }
+}
