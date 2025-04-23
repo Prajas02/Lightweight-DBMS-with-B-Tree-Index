@@ -1,0 +1,40 @@
+{
+    "BOOKS_DETAILS": {
+        "schema": {
+            "Book_ID": "int",
+            "Book_Name": "varchar(100)",
+            "Book_Author": "varchar(100)",
+            "Book_Publication_Year": "year",
+            "Total_Reviews": "int",
+            "Quantity": "int",
+            "BOOK_GENRE": "varchar(1000)"
+        },
+        "primary_key": "Book_ID",
+        "records": [
+            {
+                "Book_ID": 1,
+                "Book_Name": "1984",
+                "Book_Author": "George Orwell",
+                "Book_Publication_Year": 1949,
+                "Total_Reviews": 8945,
+                "Quantity": 10,
+                "BOOK_GENRE": "Dystopian Fiction"
+            }
+        ]
+    },
+    "SYS_LOGS": {
+        "schema": {
+            "Log_ID": "int",
+            "Action": "varchar(255)",
+            "Timestamp": "timestamp"
+        },
+        "primary_key": "Log_ID",
+        "records": [
+            {
+                "Log_ID": 1,
+                "Action": "Insert Book",
+                "Timestamp": "2025-04-20 14:00:00"
+            }
+        ]
+    }
+}
