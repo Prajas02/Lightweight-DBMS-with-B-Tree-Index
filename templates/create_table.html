@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Table</title>
+</head>
+<body>
+    <h1>Create a New Table in Database: {{ db_name }}</h1>
+    <form method="POST">
+        <label>Table Name: <input type="text" name="table_name" required></label><br><br>
+        
+        <label>Number of Columns: <input type="number" name="num_columns" min="1" required></label><br><br>
+        <button type="submit" name="action" value="set_columns">Set Columns</button>
+    </form>
+
+    {% if columns %}
+    <form method="POST">
+        <input type="hidden" name="table_name" value="{{ table_name }}">
+        {% for i in range(columns) %}
+            <label>Column {{ i + 1 }} Name: <input type="text" name="col{{ i }}" required></label><br>
+        {% endfor %}
+        <button type="submit" name="action" value="create_table">Create Table</button>
+    </form>
+    {% endif %}
+</body>
+</html>

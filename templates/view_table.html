@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Table: {{ table_name }} in {{ db_name }}</h2>
+
+{% if records %}
+<table border="1">
+  <tr>
+    {% for key in records[0].keys() %}
+      <th>{{ key }}</th>
+    {% endfor %}
+    <th>Actions</th>
+  </tr>
+  {% for row in records %}
+  <tr>
+    {% for value in row.values() %}
+      <td>{{ value }}</td>
+    {% endfor %}
+    <td>
+      <form method="post" action="{{ url_for('delete_row', db_name=db_name, table_name=table_name, row_index=loop.index0) }}">
+        <button type="submit">Delete</button>
+      </form>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% else %}
+<p>No records found in this table.</p>
+{% endif %}
+
+<h3>Add New Row</h3>
+<form method="post" action="{{ url_for('insert_row', db_name=db_name, table_name=table_name) }}">
+  {% if records|length > 0 %}
+    {% for key in records[0].keys() %}
+      <input type="text" name="{{ key }}" placeholder="{{ key }}" required><br>
+    {% endfor %}
+  {% else %}
+    <p>Cannot add rows because no column structure is available. Please insert at least one row through the backend first.</p>
+  {% endif %}
+  <button type="submit">Insert</button>
+</form>
+
+<a href="{{ url_for('view_database', db_name=db_name) }}">← Back to Database</a>
+{% endblock %}

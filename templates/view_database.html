@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Database: {{ db_name }}</h2>
+
+<ul>
+  {% for table in tables %}
+    <li>
+      <a href="{{ url_for('view_table', db_name=db_name, table_name=table) }}">{{ table }}</a>
+      <form method="post" action="{{ url_for('delete_table', db_name=db_name, table_name=table) }}" style="display:inline;">
+        <button type="submit">Delete</button>
+      </form>
+    </li>
+  {% endfor %}
+</ul>
+
+<form method="post" action="{{ url_for('create_table', db_name=db_name) }}">
+  <input type="text" name="table_name" placeholder="New Table" required>
+  <button type="submit">Create Table</button>
+</form>
+
+<a href="{{ url_for('home') }}">← Back</a>
+{% endblock %}

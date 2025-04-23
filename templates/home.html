@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Databases</h2>
+<ul>
+  {% for db in databases %}
+    <li>
+      <a href="{{ url_for('view_database', db_name=db) }}">{{ db }}</a>
+      <form method="post" action="{{ url_for('delete_db', db_name=db) }}" style="display:inline;">
+        <button type="submit">Delete</button>
+      </form>
+    </li>
+  {% endfor %}
+</ul>
+
+<form method="post" action="{{ url_for('create_db') }}">
+  <input type="text" name="db_name" placeholder="New DB name" required>
+  <button type="submit">Create DB</button>
+</form>
+{% endblock %}
